@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dist-pack/
+bin/*
+!bin/.gitkeep
+resources/ffmpeg/*
+!resources/ffmpeg/.gitkeep
+service/target/
+*.log
+.DS_Store
