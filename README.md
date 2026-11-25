@@ -11,7 +11,7 @@ Rust 应用（Slint + 原生 FFmpeg + 本地 AI），本插件是**重新实现*
 也可在 [最新 Release](https://github.com/ootools/otools-concat/releases/latest)
 下载 `.oplg`，通过 OTools 本地安装。
 
-v0.1.1 平台矩阵：**Windows x64（Windows 10+）、Linux x64（glibc 2.35+，如 Ubuntu 22.04+）、macOS Apple Silicon（arm64，macOS 12+）**，需 OTools 0.9.8+。
+已发布 v0.1.1，平台矩阵：**Windows x64（Windows 10+）、Linux x64（glibc 2.35+，如 Ubuntu 22.04+）、macOS Apple Silicon（arm64，macOS 12+）**，需 OTools 0.9.8+。
 每个平台包内含对应的媒体服务和 FFmpeg，无需额外安装。Intel Mac、Windows ARM、Linux ARM 尚无对应产物。验证范围见 [`docs/VERIFICATION.md`](docs/VERIFICATION.md)。
 
 ## 功能（v0.1）

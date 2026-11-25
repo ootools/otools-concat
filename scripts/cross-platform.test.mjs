@@ -69,3 +69,9 @@ test('Windows Video for Windows capture dependency is an OS DLL', () => {
 test('Windows process-status API dependency is a system DLL', () => {
   assert.deepEqual(parseDependencies('windows',' DLL Name: PSAPI.DLL'),['PSAPI.DLL']);
 });
+
+test('switching an existing combined listing to platform packages explicitly clears old fallback', () => {
+  const payload=marketPayload({packid:'otools-concat',version:'0.1.1',entry:'dist/index.html'},'ootools/otools-concat','v0.1.1','0.1.1',{platformPackages:true,platforms:['macos','windows','linux']});
+  const stored={packageUrl:'https://example.com/old-macos-only.oplg',...payload};
+  assert.equal(stored.packageUrl,'');
+});

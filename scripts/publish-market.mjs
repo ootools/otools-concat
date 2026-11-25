@@ -116,7 +116,7 @@ export function marketPayload(manifest,repo,tag,version,extras={}) {
   if (extras.platformPackages) {
     // 六平台分包：每个平台/架构一个包，客户端优先下载平台包，失败回退合包。
     payload.packageMode=1;
-    delete payload.packageUrl;
+    payload.packageUrl=''; // Explicitly clear the previous combined-package fallback.
     for (const target of PLATFORM_TARGETS) {
       payload[target.field]=platforms.includes(target.suffix) ? `${base}/${platformPackageName(manifest.packid,version,target.suffix)}` : '';
     }

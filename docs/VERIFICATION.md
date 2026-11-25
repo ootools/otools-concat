@@ -1,3 +1,37 @@
+# v0.1.1 三平台发布验证
+
+日期：2026-11-25。发行提交 `38b4abd7d69ec2590e0cf61a97d48eb29a9d8543`，标签 `plugin-otools-concat-v0.1.1`。
+
+[全绿 CI](https://github.com/ootools/otools-concat/actions/runs/45568511354) · [Release](https://github.com/ootools/otools-concat/releases/tag/plugin-otools-concat-v0.1.1)
+
+| 平台 | 原生验证环境 | 结果 |
+| --- | --- | --- |
+| Windows x64 | windows-2022 | 运行时隔离目录运行、原始服务冒烟、解压正式包冒烟通过 |
+| Linux x64 | ubuntu-22.04 | 同上，通过 |
+| macOS arm64 | macos-15 | 运行时签名/系统依赖/源码哈希验证、原始服务与解压包冒烟通过；CI 包另下载到本机复验 |
+
+每个平台 CI 均通过 33 项脚本测试、18 项核心逻辑测试、类型检查与前端构建；Unix 另通过 2 项 Rust 权限恢复测试。发布回读发现旧合包 URL 残留，发布脚本新增明确清空逻辑与回归测试后，脚本测试为 34/34；该修改仅影响市场元数据，不修改已发布二进制或标签。
+
+真实服务冒烟覆盖：stdio 握手、中文/空格路径、工程保存/覆盖/读取、两个带音轨视频的探针、缩略图、QOI 覆盖层、滤镜拼接渲染、输出编码和时长。每个平台的解压包均导出 2.00 秒 H.264/AAC MP4。解压模拟宿主：资源文件为 0644，仅 sidecar 预先有执行权限，由 sidecar 修复包内媒体工具权限。
+
+关键修复：MinGW make 使用 .exe 目标；Windows 系统 DLL 检查识别 AVICAP32/PSAPI；打包等待运行时校验；每个平台独立包；不填写不存在的架构 URL；清空旧版单合包回退地址。
+
+## 公开分发校验
+
+三个包均从公开 Release URL 完整下载并逐字节比较 CI 原件；ZIP CRC、包内 manifest、运行时所有已记录文件 SHA256、PE/ELF/Mach-O 架构及平台隔离检查通过。GitHub 资产摘要与本地相同。
+
+- `macos`：36,819,094 字节；SHA256 `a651f0bf1249f68385cfa4bf520872a04ef9a0557ac23fc15d42ae0596da47ef`。
+- `windows`：37,633,363 字节；SHA256 `1492a23aa136e6b71ec49ac6bcc6101250a1ba7e6a40e1d67356b0f8173f4a95`。
+- `linux`：36,969,037 字节；SHA256 `22e04ccab8cbcd870e3f41e7197e992c0725b988dcdcc7bdcaeb7343e7c2b7ef`。
+
+市场发布接口返回 `code=200` / `插件更新成功`。公开列表回读为 `0.1.1`、`packageMode=1`，三个操作系统支持标志均为 1，三个 URL 指向本次 Release，`packageUrl` 及未发布架构 URL 为空。
+
+## 限制
+
+本次验证是原生 CI 的服务/媒体/解压包流程，没有在 Windows/Linux/macOS 宿主 GUI 上逐界面人工验收。Windows 10+、Linux glibc 2.35+、macOS 12+ 是目标兼容基线，未在每个最低版本系统实机逐一验收。Intel Mac、Windows ARM、Linux ARM 不在此次发布矩阵。八语种键和占位符检查通过，但不替代逐语种视觉审校。
+
+---
+
 # v0.1.0 发布验证
 
 验证日期：2026-11-25；平台：macOS arm64。
