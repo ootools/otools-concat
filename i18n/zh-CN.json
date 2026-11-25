@@ -92,5 +92,7 @@
   "close": "关闭",
   "loading": "加载中…",
   "retry": "重试",
-  "delete": "删除"
+  "delete": "删除",
+  "mediaFiles": "媒体文件",
+  "projectFile": "Concat 工程"
 }

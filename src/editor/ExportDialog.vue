@@ -18,7 +18,7 @@ async function chooseAndExport() {
   try {
     const { save } = await import('@tauri-apps/plugin-dialog');
     const path = await save({
-      title: 'Concat',
+      title: t('exportTitle'),
       defaultPath: 'concat-export.mp4',
       filters: [{ name: 'MP4', extensions: ['mp4'] }],
     });

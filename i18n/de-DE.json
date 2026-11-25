@@ -92,5 +92,7 @@
   "close": "Schließen",
   "loading": "Wird geladen…",
   "retry": "Erneut versuchen",
-  "delete": "Löschen"
+  "delete": "Löschen",
+  "mediaFiles": "Mediendateien",
+  "projectFile": "Concat-Projekt"
 }

@@ -92,5 +92,7 @@
   "close": "閉じる",
   "loading": "読み込み中…",
   "retry": "再試行",
-  "delete": "削除"
+  "delete": "削除",
+  "mediaFiles": "メディアファイル",
+  "projectFile": "Concat プロジェクト"
 }

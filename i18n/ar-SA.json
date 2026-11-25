@@ -92,5 +92,7 @@
   "close": "إغلاق",
   "loading": "جارٍ التحميل…",
   "retry": "إعادة المحاولة",
-  "delete": "حذف"
+  "delete": "حذف",
+  "mediaFiles": "ملفات الوسائط",
+  "projectFile": "مشروع Concat"
 }

@@ -92,5 +92,7 @@
   "close": "Закрыть",
   "loading": "Загрузка…",
   "retry": "Повторить",
-  "delete": "Удалить"
+  "delete": "Удалить",
+  "mediaFiles": "Медиафайлы",
+  "projectFile": "Проект Concat"
 }

@@ -92,5 +92,7 @@
   "close": "닫기",
   "loading": "불러오는 중…",
   "retry": "다시 시도",
-  "delete": "삭제"
+  "delete": "삭제",
+  "mediaFiles": "미디어 파일",
+  "projectFile": "Concat 프로젝트"
 }
