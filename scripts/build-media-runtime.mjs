@@ -65,7 +65,7 @@ function options(args) {
   return options;
 }
 
-async function acquireSource(name, source, supplied, cache) {
+export async function acquireSource(name, source, supplied, cache) {
   if (supplied) {
     await verifySourceArchive(supplied, source.sha256);
     return supplied;
@@ -89,7 +89,7 @@ async function acquireSource(name, source, supplied, cache) {
   return archive;
 }
 
-async function extractSource(name, archive, cache) {
+export async function extractSource(name, archive, cache) {
   const names = command('/usr/bin/tar', ['-tf', archive]);
   const verbose = command('/usr/bin/tar', ['-tvf', archive]);
   const top = validateArchiveEntries(names, verbose);
@@ -98,7 +98,7 @@ async function extractSource(name, archive, cache) {
   return join(directory, top);
 }
 
-async function runBuild(tool, args, cwd, env, label, log) {
+export async function runBuild(tool, args, cwd, env, label, log) {
   console.log(`${label}; log ${log}`);
   const { open } = await import('node:fs/promises');
   const file = await open(log, 'w');
@@ -111,7 +111,7 @@ async function runBuild(tool, args, cwd, env, label, log) {
   } finally { await file.close(); }
 }
 
-async function recordFile(directory, relative, bytes, sha256) {
+export async function recordFile(directory, relative, bytes, sha256) {
   await mkdir(dirname(join(directory, relative)), { recursive: true });
   await writeFile(join(directory, relative), bytes);
   sha256[relative] = hash(bytes);

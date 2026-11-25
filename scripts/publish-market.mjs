@@ -118,7 +118,7 @@ export function marketPayload(manifest,repo,tag,version,extras={}) {
     payload.packageMode=1;
     delete payload.packageUrl;
     for (const target of PLATFORM_TARGETS) {
-      payload[target.field]=`${base}/${platformPackageName(manifest.packid,version,target.suffix)}`;
+      payload[target.field]=platforms.includes(target.suffix) ? `${base}/${platformPackageName(manifest.packid,version,target.suffix)}` : '';
     }
   } else {
     // 单合包：显式上报 packageMode=0，清除市场库里可能残留的分包模式。

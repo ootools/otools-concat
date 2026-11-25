@@ -1,10 +1,12 @@
 {
   "name": "otools-concat",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "license": "GPL-3.0-or-later",
-  "engines": { "node": ">=22.18" },
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 6578 --strictPort",
     "build": "vue-tsc --noEmit && vite build",
@@ -12,7 +14,7 @@
     "preview": "node scripts/serve-dist.mjs 6579",
     "pack": "npm run build && node scripts/pack-plugin.mjs && node scripts/verify-plugin.mjs",
     "verify": "node scripts/verify-plugin.mjs",
-    "test": "node --test scripts/publish-market.test.mjs scripts/release-policy.test.mjs scripts/verify-plugin.test.mjs scripts/i18n-parity.test.mjs",
+    "test": "node --test scripts/*.test.mjs",
     "test:src": "node --test --experimental-strip-types \"src/**/*.test.ts\"",
     "market:preflight": "node scripts/publish-market.mjs preflight",
     "smoke": "node scripts/smoke-concatd.mjs"

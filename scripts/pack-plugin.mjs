@@ -29,7 +29,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { currentPlatform, binaryName, verifyExecutable, collectFiles } from './package-common.mjs';
 import { validateRuntimeMetadata } from './runtime-metadata.mjs';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = path.resolve(arg('root', path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')));
 
 function arg(name, fallback) {
   const index = process.argv.indexOf(`--${name}`);
@@ -87,7 +87,7 @@ export function productionManifest(manifest, version = '') {
   return result;
 }
 
-function main() {
+async function main() {
   const dev = flag('dev');
   const platformsArg = arg('platforms', '');
   const platforms = platformsArg
@@ -96,6 +96,15 @@ function main() {
   const unknown = platforms.filter((value) => !(value in SUPPORT_FIELDS));
   if (unknown.length) throw new Error(`未知平台后缀：${unknown.join(', ')}`);
 
+  for (const suffix of platforms) await packTarget(suffix, platforms.length > 1 || flag('per-platform'), dev);
+}
+
+export function packageLayout(packid, version, suffix, perPlatform) {
+  return { directory: perPlatform ? suffix : '', filename: `${packid}-${version}${perPlatform ? `-${suffix}` : ''}.oplg` };
+}
+
+async function packTarget(suffix, perPlatform, dev) {
+  const platforms = [suffix];
   const source = JSON.parse(fs.readFileSync(path.join(root, 'plugin.json'), 'utf8'));
   const manifest = productionManifest(source, arg('version', source.version));
   const { version, packid } = manifest;
@@ -103,7 +112,6 @@ function main() {
   const outDir = path.join(root, arg('out', 'dist-pack'));
   // 单平台 → 合包命名（<packid>-<version>.oplg，平铺）；多平台 → 每平台一个
   // <packid>-<version>-<suffix>.oplg，放 dist-pack/<suffix>/ 子目录。
-  const perPlatform = platforms.length > 1;
   const artifactDir = perPlatform ? path.join(outDir, platforms[0]) : outDir;
   fs.mkdirSync(artifactDir, { recursive: true });
 
@@ -152,7 +160,7 @@ function main() {
     if (!fs.existsSync(directory)) {
       throw new Error(`缺少 FFmpeg 运行时：resources/ffmpeg/${suffix}/（运行 npm run build:media-runtime，或从 uniplayer 仓拷贝已验证产物）`);
     }
-    void validateRuntimeMetadata(root, PLATFORM_TARGETS[suffix], { formal: !dev });
+    await validateRuntimeMetadata(root, PLATFORM_TARGETS[suffix], { formal: !dev });
     for (const relative of collectFiles(directory)) {
       entries.push({ name: `resources/ffmpeg/${suffix}/${relative}`, data: fs.readFileSync(path.join(directory, relative)) });
     }
@@ -168,7 +176,7 @@ function main() {
   }
 
   const devSuffix = dev ? `-dev-${platforms[0]}` : '';
-  const outputName = perPlatform ? `${packid}-${version}-${platforms[0]}${devSuffix}.oplg` : `${packid}-${version}${devSuffix}.oplg`;
+  const outputName = packageLayout(packid, version, suffix, perPlatform).filename.replace(/\.oplg$/, `${devSuffix}.oplg`);
   const output = path.join(artifactDir, outputName);
 
   // 手写 ZIP（不引第三方库，CI 只要有 node 就能打包）
@@ -258,7 +266,7 @@ function zipEntries(entries) {
 // 被 node --test 导入时不执行（与 publish-market.mjs 的入口守卫一致）
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
-    main();
+    await main();
   } catch (error) {
     console.error(error.message);
     process.exitCode = 1;

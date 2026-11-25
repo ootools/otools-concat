@@ -5,7 +5,7 @@
   "displayNameCN": "Concat 剪辑",
   "developerName": "OTools",
   "summary": "本地优先的快剪视频编辑器：多轨时间线、剪切拼接、变速、文字与滤镜，离线导出 MP4。",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minOToolsVersion": "0.9.8",
   "entry": "dist/index.html",
   "devUrl": "http://127.0.0.1:6578",

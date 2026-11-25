@@ -8,3 +8,6 @@ resources/ffmpeg/*
 service/target/
 *.log
 .DS_Store
+
+.media-runtime-cache/
+.tempbackups/

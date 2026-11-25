@@ -8,6 +8,8 @@
  */
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
+import { once } from 'node:events';
+import { currentPlatform, binaryName } from './package-common.mjs';
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
@@ -21,22 +23,14 @@ function arg(name, fallback) {
 }
 const keep = process.argv.includes('--keep');
 
+const target = currentPlatform();
 function detectTool(name) {
-  const env = process.env[name === 'ffmpeg' ? 'FFMPEG_PATH' : 'FFPROBE_PATH'];
-  if (env && fs.existsSync(env)) return env;
-  const candidates = [
-    path.join(root, 'resources/ffmpeg', os.platform() === 'darwin' ? (process.arch === 'arm64' ? 'macos' : 'macos-intel') : 'linux', name),
-    path.join(root, '..', 'otools-uniplayer', 'resources', 'ffmpeg', 'macos', name),
-  ];
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) return candidate;
-  }
-  return name; // 让 PATH 兜底
+  const supplied = arg(name, process.env[name === 'ffmpeg' ? 'FFMPEG_PATH' : 'FFPROBE_PATH']);
+  return supplied || path.join(root, 'resources/ffmpeg', target.suffix, name + (target.os === 'win32' ? '.exe' : ''));
 }
-
 const ffmpeg = detectTool('ffmpeg');
 const ffprobe = detectTool('ffprobe');
-const bin = arg('bin', path.join(root, 'bin', `concatd-${process.platform === 'darwin' ? (process.arch === 'arm64' ? 'macos' : 'macos-intel') : 'linux'}`));
+const bin = arg('bin', path.join(root, 'bin', binaryName('concatd', target)));
 
 function fail(message) {
   console.error(`✗ ${message}`);
@@ -47,11 +41,12 @@ const ok = (message) => console.log(`✓ ${message}`);
 if (!fs.existsSync(bin)) fail(`concatd 不存在：${bin}（先 cargo build --release）`);
 
 // —— 生成 2 段测试视频（1.5s，各带音轨与不同颜色/音调）——
-const workdir = fs.mkdtempSync(path.join(os.tmpdir(), 'concatd-smoke-'));
+const workdir = fs.mkdtempSync(path.join(os.tmpdir(), 'concatd smoke 测试-'));
 const run = (tool, args) =>
   new Promise((resolve, reject) => {
     const child = spawn(tool, args, { stdio: ['ignore', 'ignore', 'pipe'] });
     let stderr = '';
+    child.on('error', reject);
     child.stderr.on('data', (chunk) => (stderr += chunk));
     child.on('close', (code) => (code === 0 ? resolve() : reject(new Error(stderr.slice(-400)))));
   });
@@ -166,6 +161,16 @@ async function main() {
   };
   ok(`握手成功：${origin}`);
 
+  // Repeated save/open covers Windows overwrite semantics and Unicode paths.
+  const projectFile = path.join(workdir, '工程 project.concatproj');
+  for (const revision of [1, 2]) {
+    const contents = JSON.stringify({ version: 1, revision });
+    await call('/api/project', { path: projectFile, dataBase64: Buffer.from(contents).toString('base64') });
+    const loaded = await call(`/api/project?path=${encodeURIComponent(projectFile)}`, undefined, 'GET');
+    if (Buffer.from(loaded.dataBase64, 'base64').toString() !== contents) fail('project save/open mismatch');
+  }
+  ok('工程保存/覆盖/打开（Unicode + 空格路径）');
+
   // probe 两个素材
   const probeA = await call('/api/probe', { path: first });
   const probeB = await call('/api/probe', { path: second });
@@ -234,7 +239,7 @@ async function main() {
         childProcess.stdout.on('data', (chunk) => chunks.push(chunk));
         childProcess.on('close', () => resolve(Buffer.concat(chunks)));
         childProcess.on('error', reject);
-      })).buffer,
+      })),
     ),
   );
   const duration = Number(probeOutput.format.duration);
@@ -245,11 +250,15 @@ async function main() {
   ok(`输出校验：duration=${duration.toFixed(2)}s, h264+aac ✓`);
 
   await call('/api/close', {});
-  child.kill();
+  const closed = once(child, 'exit');
+  child.stdin.end();
+  const timeout = setTimeout(() => child.kill(), 5000);
+  await closed;
+  clearTimeout(timeout);
   if (keep) {
     ok(`保留工作目录：${workdir}`);
   } else {
-    fs.rmSync(workdir, { recursive: true, force: true });
+    fs.rmSync(workdir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
   }
   ok('冒烟全部通过');
 }

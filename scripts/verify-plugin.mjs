@@ -195,7 +195,7 @@ function main() {
   if (fs.existsSync(metaPath)) {
     try {
       const meta = JSON.parse(fs.readFileSync(metaPath, 'utf8'));
-      const outputName = path.basename(String(meta.output || ''));
+      const outputName = path.posix.basename(String(meta.output || '').replaceAll('\\', '/'));
       if (outputName.endsWith('.oplg')) filename = outputName;
     } catch {
       // meta.json 损坏时回退主包名，后面的 SHA256SUMS/CRC 校验会兜住
