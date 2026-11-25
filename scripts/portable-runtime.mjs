@@ -17,8 +17,9 @@ export function parseDependencies(suffix, report) {
   const dependencies = [...new Set([...report.matchAll(pattern)].map(m=>m[1]))].sort();
   if (!dependencies.length) throw new Error('Dependency report is empty');
   const linux = /^(libc\.so\.6|libm\.so\.6|libpthread\.so\.0|libdl\.so\.2|librt\.so\.1|libgcc_s\.so\.1|ld-linux-x86-64\.so\.2)$/;
-  const windows = /^(avicap32|kernel32|msvcrt|ucrtbase|advapi32|bcrypt|crypt32|ole32|oleaut32|shell32|shlwapi|user32|gdi32|ws2_32|secur32|ntdll|version|winmm|avrt|mfplat|mfuuid|strmiids|dxgi|d3d11|d3d12|dxva2|ksuser)\.dll$|^api-ms-win-[a-z0-9-]+\.dll$/i;
-  for(const name of dependencies) if (!(suffix === 'windows' ? windows : linux).test(name)) throw new Error(`Runtime has external dynamic dependency: ${name}`);
+  const windows = /^(psapi|avicap32|kernel32|msvcrt|ucrtbase|advapi32|bcrypt|crypt32|ole32|oleaut32|shell32|shlwapi|user32|gdi32|ws2_32|secur32|ntdll|version|winmm|avrt|mfplat|mfuuid|strmiids|dxgi|d3d11|d3d12|dxva2|ksuser)\.dll$|^api-ms-win-[a-z0-9-]+\.dll$/i;
+  const external = dependencies.filter(name => !(suffix === 'windows' ? windows : linux).test(name));
+  if (external.length) throw new Error(`Runtime has external dynamic dependencies: ${external.join(', ')}`);
   return dependencies;
 }
 

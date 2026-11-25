@@ -65,3 +65,7 @@ test('MinGW make uses .exe targets rather than nonexistent POSIX targets', () =>
 test('Windows Video for Windows capture dependency is an OS DLL', () => {
   assert.deepEqual(parseDependencies('windows',' DLL Name: AVICAP32.dll\n DLL Name: KERNEL32.dll'),['AVICAP32.dll','KERNEL32.dll']);
 });
+
+test('Windows process-status API dependency is a system DLL', () => {
+  assert.deepEqual(parseDependencies('windows',' DLL Name: PSAPI.DLL'),['PSAPI.DLL']);
+});
