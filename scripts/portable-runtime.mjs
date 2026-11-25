@@ -3,14 +3,12 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import os from 'node:os';
 import { execFileSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { acquireSource, extractSource, runBuild, recordFile } from './build-media-runtime.mjs';
 import { verifyExecutable } from './package-common.mjs';
 import { validateRuntimeMetadata } from './runtime-metadata.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const hash = b => createHash('sha256').update(b).digest('hex');
 const run = (tool,args,options={}) => execFileSync(tool,args,{encoding:'utf8',timeout:30000,maxBuffer:16*1024*1024,stdio:['ignore','pipe','pipe'],...options});
 const targets = { linux: { os:'linux', arch:'x64', host:'x86_64-linux-gnu', prefix:'', targetOS:'linux' }, windows: { os:'win32', arch:'x64', host:'x86_64-w64-mingw32', prefix:'x86_64-w64-mingw32-', targetOS:'mingw32' } };
 
@@ -19,7 +17,7 @@ export function parseDependencies(suffix, report) {
   const dependencies = [...new Set([...report.matchAll(pattern)].map(m=>m[1]))].sort();
   if (!dependencies.length) throw new Error('Dependency report is empty');
   const linux = /^(libc\.so\.6|libm\.so\.6|libpthread\.so\.0|libdl\.so\.2|librt\.so\.1|libgcc_s\.so\.1|ld-linux-x86-64\.so\.2)$/;
-  const windows = /^(kernel32|msvcrt|ucrtbase|advapi32|bcrypt|crypt32|ole32|oleaut32|shell32|shlwapi|user32|gdi32|ws2_32|secur32|ntdll|version|winmm|avrt|mfplat|mfuuid|strmiids|dxgi|d3d11|d3d12|dxva2|ksuser)\.dll$|^api-ms-win-[a-z0-9-]+\.dll$/i;
+  const windows = /^(avicap32|kernel32|msvcrt|ucrtbase|advapi32|bcrypt|crypt32|ole32|oleaut32|shell32|shlwapi|user32|gdi32|ws2_32|secur32|ntdll|version|winmm|avrt|mfplat|mfuuid|strmiids|dxgi|d3d11|d3d12|dxva2|ksuser)\.dll$|^api-ms-win-[a-z0-9-]+\.dll$/i;
   for(const name of dependencies) if (!(suffix === 'windows' ? windows : linux).test(name)) throw new Error(`Runtime has external dynamic dependency: ${name}`);
   return dependencies;
 }

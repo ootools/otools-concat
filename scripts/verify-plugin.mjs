@@ -24,7 +24,7 @@ const fail = (message) => {
 const ok = (message) => console.log(`✓ ${message}`);
 
 /** 最小 ZIP 读取器：走中央目录，逐个条目解压并核对 CRC32 */
-function readZip(buffer) {
+export function readZip(buffer) {
   // EOCD：从尾部往前找 0x06054b50
   let eocd = -1;
   for (let i = buffer.length - 22; i >= 0 && i >= buffer.length - 22 - 65535; i -= 1) {

@@ -93,6 +93,7 @@ jobs:
       - run: npm run smoke
       - run: node scripts/pack-plugin.mjs --platforms ${{ matrix.target }} --per-platform
       - run: node scripts/verify-plugin.mjs dist-pack/${{ matrix.target }}
+      - run: node scripts/smoke-package.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: package-${{ matrix.target }}
@@ -123,6 +124,7 @@ jobs:
       - run: npm run smoke
       - run: node scripts/pack-plugin.mjs --platforms macos --per-platform
       - run: node scripts/verify-plugin.mjs dist-pack/macos
+      - run: node scripts/smoke-package.mjs
       - uses: actions/upload-artifact@v4
         with:
           name: package-macos

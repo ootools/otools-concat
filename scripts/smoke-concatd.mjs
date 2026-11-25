@@ -15,7 +15,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const root = path.resolve(arg('root', path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')));
 
 function arg(name, fallback) {
   const index = process.argv.indexOf(`--${name}`);
@@ -142,11 +142,12 @@ function connect() {
 async function main() {
   ok(`concatd: ${bin}`);
   ok(`ffmpeg: ${ffmpeg}`);
+  const connection = connect();
+  const { child, token, port: portPromise, initOrigin } = connection;
+  const port = await portPromise; // Starting the installed service must prepare bundled tool permissions.
   const [first, second] = await makeInputs();
   ok(`测试素材：${first}, ${second}`);
 
-  const { child, token, port: portPromise, initOrigin } = connect();
-  const port = await portPromise;
   const origin = `http://127.0.0.1:${port}`;
   const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Origin: initOrigin };
   const call = async (route, body, method) => {

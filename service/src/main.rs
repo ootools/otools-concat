@@ -124,6 +124,25 @@ async fn termination_signal() {
     let _ = tokio::signal::ctrl_c().await;
 }
 
+/// The host's archive extractor creates resources as 0644. Only repair the two
+/// package-owned media tools; never chmod a developer-supplied path or a symlink.
+fn prepare_bundled_tool(path: &std::path::Path) -> Result<(), &'static str> {
+    let metadata = std::fs::symlink_metadata(path).map_err(|_| "media runtime unavailable")?;
+    if !metadata.is_file() || metadata.file_type().is_symlink() {
+        return Err("bundled media tool must be a regular file");
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let mode = metadata.permissions().mode();
+        if mode & 0o100 == 0 {
+            std::fs::set_permissions(path, std::fs::Permissions::from_mode(mode | 0o100))
+                .map_err(|_| "bundled media tool permissions unavailable")?;
+        }
+    }
+    Ok(())
+}
+
 fn runtime_tools() -> Result<(String, String), &'static str> {
     let executable = std::env::current_exe().map_err(|_| "runtime location unavailable")?;
     let root = executable
@@ -154,18 +173,51 @@ fn runtime_tools() -> Result<(String, String), &'static str> {
         ""
     };
     let locate = |variable: &str, name: &str| -> Result<String, &'static str> {
-        let path = std::env::var_os(variable)
-            .map(PathBuf::from)
+        let override_path = std::env::var_os(variable);
+        let bundled = override_path.is_none();
+        let path = override_path.map(PathBuf::from)
             .unwrap_or_else(|| dir.join(format!("{name}{suffix}")));
         if !path.is_absolute() || !path.is_file() {
             return Err(
                 "media runtime unavailable; prepare local runtime or set development tool paths",
             );
         }
+        if bundled { prepare_bundled_tool(&path)?; }
         Ok(path.to_string_lossy().into_owned())
     };
     Ok((
         locate("FFMPEG_PATH", "ffmpeg")?,
         locate("FFPROBE_PATH", "ffprobe")?,
     ))
+}
+
+#[cfg(all(test, unix))]
+mod runtime_permission_tests {
+    use super::*;
+    use std::os::unix::fs::PermissionsExt;
+
+    #[test]
+    fn extracted_bundled_tool_is_executable_after_preparation() {
+        let dir = tempfile::tempdir().unwrap();
+        let tool = dir.path().join("ffprobe");
+        std::fs::write(&tool, "#!/bin/sh\nprintf ready").unwrap();
+        std::fs::set_permissions(&tool, std::fs::Permissions::from_mode(0o644)).unwrap();
+        assert!(std::process::Command::new(&tool).output().is_err());
+        prepare_bundled_tool(&tool).unwrap();
+        let result = std::process::Command::new(&tool).output().unwrap();
+        assert!(result.status.success());
+        assert_eq!(result.stdout, b"ready");
+    }
+
+    #[test]
+    fn bundled_tool_permission_repair_rejects_symlinks() {
+        let dir = tempfile::tempdir().unwrap();
+        let outside = dir.path().join("outside");
+        let link = dir.path().join("ffmpeg");
+        std::fs::write(&outside, "data").unwrap();
+        std::fs::set_permissions(&outside, std::fs::Permissions::from_mode(0o644)).unwrap();
+        std::os::unix::fs::symlink(&outside, &link).unwrap();
+        assert!(prepare_bundled_tool(&link).is_err());
+        assert_eq!(std::fs::metadata(outside).unwrap().permissions().mode() & 0o777, 0o644);
+    }
 }
