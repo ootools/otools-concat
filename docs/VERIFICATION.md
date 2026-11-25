@@ -24,3 +24,13 @@
 v0.1.0 仅提供 macOS Apple Silicon 资产，单合包 `packageMode=0`，市场标志为 `supportMacos=true`、`supportWindows=false`、`supportLinux=false`。尚未验证或提供 Intel Mac、Windows、Linux 产物。
 
 实现范围与后续转场、关键帧及自动字幕计划见 `SPEC.md` 和 `../UPSTREAM.md`。
+
+## 发布记录
+
+- 发行提交：`1dca521f3b4663a6cf768ecbfad23837d5fec42c`。
+- 标签：`plugin-otools-concat-v0.1.0`，与发行提交一致。
+- [GitHub Release](https://github.com/ootools/otools-concat/releases/tag/plugin-otools-concat-v0.1.0)：公开正式版本（非草稿、非预发布），附 `.oplg`、`SHA256SUMS`、manifest 和 logo。
+- `.oplg` 大小：37,092,174 字节；SHA256：`5906da8da12b69d3b533bf7cb51e0712ce6dd68dbe1a61371b1ad4ca5a296310`，与 GitHub 资产摘要相同。
+- 已经公开下载 URL 完整下载 `.oplg` 并逐字节比对本地产物，SHA256 相同；图标 URL 内容也与仓库一致。本机 GitHub 直连不稳定，下载核验使用系统已配置的 HTTP 代理。
+- 市场发布接口返回 `code=200` / `插件创建成功`；公开 `/api/v1/otools/plugin/lists` 回读确认 `otools-concat` / `0.1.0` / `packageMode=0` 和平台标志正确。
+- 后续发布所需 `release` environment、`XYCLOUD_PAT` secret 与 `OTOOLS_PUBLISH_MARKET=true` 已配置。

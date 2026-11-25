@@ -5,6 +5,15 @@
 Rust 应用（Slint + 原生 FFmpeg + 本地 AI），本插件是**重新实现**而非代码移植——移植决策
 与分期路线见 [`UPSTREAM.md`](UPSTREAM.md)，规格见 [`docs/SPEC.md`](docs/SPEC.md)。
 
+## 安装
+
+已上架 OTools 插件市场，搜索 **Concat** 或 **Concat 剪辑** 安装。
+也可在 [v0.1.0 Release](https://github.com/ootools/otools-concat/releases/tag/plugin-otools-concat-v0.1.0)
+下载 `.oplg`，通过 OTools 本地安装。
+
+当前资产仅支持 **macOS Apple Silicon（arm64，macOS 12+）**，需 OTools 0.9.8+。
+Intel Mac、Windows、Linux 暂无对应产物。验证范围见 [`docs/VERIFICATION.md`](docs/VERIFICATION.md)。
+
 ## 功能（v0.1）
 
 - **导入**：文件对话框 / 拖拽 / 以关联文件打开（视频、音频、jpg 图片）
