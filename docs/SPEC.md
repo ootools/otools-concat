@@ -47,7 +47,7 @@ FFmpeg 9.0.2 + x264 r3222（源码锁 `runtime-source-lock.json`，GPL-3.0-or-la
 
 - 图片导入仅 jpg/jpeg（mjpeg 内建解码）；
 - 文字覆盖层用 **QOI**（ffmpeg 内建无损 RGBA 编解码器，前端 `src/render/qoi.ts` 纯 TS 编码）；
-- 其他平台运行时随实机验证逐个补（v0.1 仅 macos 资产，supportMacos 如实上报）。
+- v0.1.1 运行时覆盖 macOS arm64、Windows x64 和 Linux x64；各原生 CI runner 执行媒体与服务冒烟后才生成正式平台包。
 
 ## i18n（重点）
 
@@ -63,7 +63,7 @@ FFmpeg 9.0.2 + x264 r3222（源码锁 `runtime-source-lock.json`，GPL-3.0-or-la
 `npm run dev`（6578）/ `preview`（6579）/ `build`（vue-tsc + vite）/ `test`（scripts 25 测）/
 `test:src`（strip-types 单测：plan 18 + qoi）/ `pack`（build+pack+verify）。
 
-- `pack-plugin.mjs`：linuxdo 手写 ZIP + uniplayer 式 bin/resources 收集；`--platforms` 多平台；
+- `pack-plugin.mjs`：linuxdo 手写 ZIP + uniplayer 式 bin/resources 收集；`--platforms` 多平台（逐平台生成独立包），`--per-platform` 单平台也使用平台包名称；
   生产清单剥 devUrl/quickDev；meta.json 记录平台与 support 标志（如实上报）。
 - `verify-plugin.mjs`：linuxdo 加固版（serde duplicateJsonKeys/caseVariant 碰撞）+ sidecar
   bin/ffmpeg 运行时存在性 + support 标志一致性。

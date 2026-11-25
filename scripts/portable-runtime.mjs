@@ -24,6 +24,10 @@ export function parseDependencies(suffix, report) {
   return dependencies;
 }
 
+export function ffmpegMakeTargets(suffix) {
+  return ['ffmpeg', 'ffprobe'].map(name => name + (suffix === 'windows' ? '.exe' : ''));
+}
+
 async function build(suffix) {
   const target=targets[suffix];
   if (!target || process.platform !== 'linux' || process.arch !== 'x64') throw new Error('Portable build requires Linux x64 and target linux/windows');
@@ -44,7 +48,7 @@ async function build(suffix) {
   await runBuild('/usr/bin/make',['-j4','install-lib-static'],builds.x264,env,'Build x264',path.join(builds.x264,'make.log'));
   const ffmpegConfigure=[`--prefix=${path.join(builds.ffmpeg,'install')}`,`--target-os=${target.targetOS}`,'--arch=x86_64',`--cc=${cc}`,`--cxx=${cxx}`,'--enable-static','--disable-shared','--disable-autodetect','--enable-gpl','--enable-version3','--enable-libx264','--disable-network','--disable-opencl','--disable-ffplay','--disable-doc','--enable-ffmpeg','--enable-ffprobe','--pkg-config=/usr/bin/pkg-config','--pkg-config-flags=--static',`--extra-cflags=-I${prefix}/include`,`--extra-ldflags=${target.prefix?'-static -static-libgcc -static-libstdc++ ':''}-L${prefix}/lib`,...(target.prefix?['--enable-cross-compile',`--cross-prefix=${target.prefix}`]:[])];
   await runBuild('/bin/bash',[path.join(sources.ffmpeg,'configure'),...ffmpegConfigure],builds.ffmpeg,env,'Configure FFmpeg',path.join(builds.ffmpeg,'configure.log'));
-  await runBuild('/usr/bin/make',['-j4','ffmpeg','ffprobe'],builds.ffmpeg,env,'Build FFmpeg',path.join(builds.ffmpeg,'make.log'));
+  await runBuild('/usr/bin/make',['-j4',...ffmpegMakeTargets(suffix)],builds.ffmpeg,env,'Build FFmpeg',path.join(builds.ffmpeg,'make.log'));
   const directory=path.join(root,'resources/ffmpeg',suffix); await fs.mkdir(directory,{recursive:true});
   const extension=suffix==='windows'?'.exe':'';
   const dependencies=new Set();

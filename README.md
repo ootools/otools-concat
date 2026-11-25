@@ -8,11 +8,11 @@ Rust 应用（Slint + 原生 FFmpeg + 本地 AI），本插件是**重新实现*
 ## 安装
 
 已上架 OTools 插件市场，搜索 **Concat** 或 **Concat 剪辑** 安装。
-也可在 [v0.1.0 Release](https://github.com/ootools/otools-concat/releases/tag/plugin-otools-concat-v0.1.0)
+也可在 [最新 Release](https://github.com/ootools/otools-concat/releases/latest)
 下载 `.oplg`，通过 OTools 本地安装。
 
-当前资产仅支持 **macOS Apple Silicon（arm64，macOS 12+）**，需 OTools 0.9.8+。
-Intel Mac、Windows、Linux 暂无对应产物。验证范围见 [`docs/VERIFICATION.md`](docs/VERIFICATION.md)。
+v0.1.1 平台矩阵：**Windows x64（Windows 10+）、Linux x64（glibc 2.35+，如 Ubuntu 22.04+）、macOS Apple Silicon（arm64，macOS 12+）**，需 OTools 0.9.8+。
+每个平台包内含对应的媒体服务和 FFmpeg，无需额外安装。Intel Mac、Windows ARM、Linux ARM 尚无对应产物。验证范围见 [`docs/VERIFICATION.md`](docs/VERIFICATION.md)。
 
 ## 功能（v0.1）
 
@@ -72,9 +72,8 @@ node scripts/verify-plugin.mjs dist-pack
 
 ## 发布
 
-推 `v<版本>` 标签触发 `.github/workflows/release-plugin.yml`（macOS arm64 构建 + 打包 +
-Release）；市场发布认证与三件套配置见 otools 工作区 AGENTS.md。v0.1 仅 macOS arm64 资产，
-`supportMacos` 如实上报，其余平台随实机验证逐个补（uniplayer 先例）。
+推 `v<版本>` 标签触发 `.github/workflows/release-plugin.yml`：从锁定源码构建三平台运行时，在各自原生 runner 验证媒体服务后打包，再发布 Release 和市场。
+手动运行不填 release_tag 时仅构建验证；补发填写已存在的标签并开启 publish_market。平台包使用 `packageMode=1`，仅发布实际构建成功的平台 URL。
 
 ## 许可
 

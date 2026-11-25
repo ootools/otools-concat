@@ -55,3 +55,9 @@ test('packaging fails before writing any ZIP when runtime metadata is invalid', 
     assert.equal(fs.existsSync(path.join(root,'dist-pack/linux/test-0.1.1-linux.oplg')),false);
   } finally {fs.rmSync(root,{recursive:true,force:true});}
 });
+
+import { ffmpegMakeTargets } from './portable-runtime.mjs';
+test('MinGW make uses .exe targets rather than nonexistent POSIX targets', () => {
+  assert.deepEqual(ffmpegMakeTargets('windows'), ['ffmpeg.exe','ffprobe.exe']);
+  assert.deepEqual(ffmpegMakeTargets('linux'), ['ffmpeg','ffprobe']);
+});
