@@ -17,7 +17,8 @@
     "test": "node --test scripts/*.test.mjs",
     "test:src": "node --test --experimental-strip-types \"src/**/*.test.ts\"",
     "market:preflight": "node scripts/publish-market.mjs preflight",
-    "smoke": "node scripts/smoke-concatd.mjs"
+    "smoke": "node scripts/smoke-concatd.mjs",
+    "smoke:webview": "node scripts/smoke-webview.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",

@@ -68,3 +68,24 @@ v0.1.0 仅提供 macOS Apple Silicon 资产，单合包 `packageMode=0`，市场
 - 已经公开下载 URL 完整下载 `.oplg` 并逐字节比对本地产物，SHA256 相同；图标 URL 内容也与仓库一致。本机 GitHub 直连不稳定，下载核验使用系统已配置的 HTTP 代理。
 - 市场发布接口返回 `code=200` / `插件创建成功`；公开 `/api/v1/otools/plugin/lists` 回读确认 `otools-concat` / `0.1.0` / `packageMode=0` 和平台标志正确。
 - 后续发布所需 `release` environment、`XYCLOUD_PAT` secret 与 `OTOOLS_PUBLISH_MARKET=true` 已配置。
+
+# v0.1.1 安装后 WebView 导入回归（2026-11-26）
+
+用户在已安装的 v0.1.1 中点击导入时，前端把 `Window.fetch` 作为对象方法保存，macOS WKWebView 因 receiver 不再是 `Window` 而拒绝调用，错误最终显示为“媒体服务不可用”。连接失败时原实现还会保留不可用客户端。
+
+本地修复：
+
+- `ConcatdClient` 默认 transport 改为 `globalThis.fetch.bind(globalThis)`，保留 WebKit 所需的 receiver。
+- 连接只在健康检查成功后发布；健康检查失败会释放 sidecar，并清空前端客户端引用。
+- 错误状态提供多语言 Retry 操作；媒体服务错误统一使用现有八语种文案。
+- MediaLibrary、Timeline、PreviewPlayer 的图片/视频/音频元素显式启用 anonymous CORS，确保 loopback 媒体 URL 带 Origin 头。
+
+验证：
+
+- `npm test`：42/42 通过（含 WebKit receiver、失败清理、媒体元素 CORS 和八语种一致性回归）。
+- `npm run test:src`：18/18 通过。
+- `npm run build`：类型检查和 Vite 构建通过。
+- `npm run smoke`：concatd 握手、工程读写、探针、缩略图、QOI 文字覆盖层和 H.264/AAC 导出通过。
+- `npm run smoke:webview`：原生 macOS WKWebView 中完成健康检查、视频探针和中文/空格工程读写；验证 origin 为 `otools-plugin://localhost`。
+
+该修复尚未自动创建新 Release 或更新市场版本；发布前仍需按插件仓的正常流程重新打包并进行三平台原生验证。

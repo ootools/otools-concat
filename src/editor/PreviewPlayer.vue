@@ -85,6 +85,7 @@ function audioClipElements(): { clip: Clip; element: HTMLAudioElement }[] {
       let element = audioPool.get(clip.id);
       if (!element) {
         element = document.createElement('audio');
+        element.crossOrigin = 'anonymous';
         element.preload = 'auto';
         element.src = client.value.previewUrl(asset.id);
         audioPool.set(clip.id, element);
@@ -231,12 +232,13 @@ onUnmounted(() => {
 <template>
   <div class="preview-area">
     <div class="preview-frame" :style="ratioStyle">
-      <img v-if="activeIsImage && previewUrl" :src="previewUrl" alt="" />
+      <img v-if="activeIsImage && previewUrl" :src="previewUrl" crossorigin="anonymous" alt="" />
       <video
         v-else
         ref="videoEl"
         :src="previewUrl || undefined"
         :style="videoStyle"
+        crossorigin="anonymous"
         playsinline
         @ended="playing = false"
       ></video>

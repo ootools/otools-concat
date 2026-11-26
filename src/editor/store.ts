@@ -14,12 +14,13 @@ import { createHistory, type History } from '../domain/history.ts';
 import { createHostAdapter, type HostAdapter } from '../host/adapter.ts';
 import {
   ConcatdClient,
+  createReadyClient,
   ConcatdError,
   base64ToBytes,
   bytesToBase64,
   type ProbeResponse,
 } from '../host/service.ts';
-import { buildRenderPlan, PlanError } from '../render/plan.ts';
+import { buildRenderPlan } from '../render/plan.ts';
 import { encodeQoi } from '../render/qoi.ts';
 
 export const adapter: HostAdapter = createHostAdapter();
@@ -79,6 +80,11 @@ function commit(mutate: (draft: ConcatProject) => void): void {
   });
 }
 
+function mediaErrorMessage(error: unknown): string {
+  if (error instanceof ConcatdError && (error.code === 'network' || error.code === 'startup')) return t('errorSidecar');
+  return error instanceof Error ? error.message : String(error);
+}
+
 // —— 服务连接 ——
 
 export async function connectService(): Promise<void> {
@@ -86,12 +92,12 @@ export async function connectService(): Promise<void> {
   serviceError.value = null;
   try {
     const connection = await adapter.connect();
-    client.value = new ConcatdClient(connection);
-    await client.value.status();
+    client.value = await createReadyClient(connection);
     serviceState.value = 'ready';
   } catch (error) {
+    client.value = null;
     serviceState.value = 'error';
-    serviceError.value = error instanceof Error ? error.message : String(error);
+    serviceError.value = mediaErrorMessage(error);
   }
 }
 
@@ -117,7 +123,7 @@ export async function importPaths(paths: string[]): Promise<void> {
       });
     }
   } catch (error) {
-    const reason = error instanceof ConcatdError ? error.message : String(error);
+    const reason = mediaErrorMessage(error);
     showToast(t('importFailed', { reason }));
   } finally {
     importState.value = 'idle';
@@ -316,7 +322,7 @@ export async function openProject(): Promise<void> {
       }
     }
   } catch (error) {
-    const message = error instanceof Error && error.message === 'invalid' ? '' : error instanceof Error ? error.message : String(error);
+    const message = error instanceof Error && error.message === 'invalid' ? '' : mediaErrorMessage(error);
     showToast(message ? t('errorOpenProject', { reason: message }) : t('errorInvalidProject'));
   }
 }
@@ -435,7 +441,7 @@ export async function startExport(outputPath: string): Promise<void> {
     });
     exportState.value.message = t('exportDone');
   } catch (error) {
-    const message = error instanceof PlanError || error instanceof Error ? error.message : String(error);
+    const message = mediaErrorMessage(error);
     exportState.value.message = message === 'cancelled' ? t('exportCancelled') : t('exportFailed', { reason: message });
     throw error;
   } finally {

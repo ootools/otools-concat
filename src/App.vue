@@ -95,6 +95,7 @@ async function confirmNewProject() {
       <button class="icon-only ghost" :disabled="!history.canUndo()" :title="t('undo')" @click="history.canUndo() && history.undo()">↶</button>
       <button class="icon-only ghost" :disabled="!history.canRedo()" :title="t('redo')" @click="history.canRedo() && history.redo()">↷</button>
       <span class="status">{{ statusLabel(serviceState) }}</span>
+      <button v-if="serviceState === 'error'" @click="connectService">{{ t('retry') }}</button>
       <button class="primary" :disabled="!client" @click="showExport = true">⬇ {{ t('exportTitle') }}</button>
     </header>
 

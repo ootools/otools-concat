@@ -230,7 +230,7 @@ function onWaveMount(el: HTMLCanvasElement | null, clip: Clip) {
               :style="clipStyle(clip)"
               @pointerdown="onClipPointerDown($event, clip, 'move')"
             >
-              <img v-if="meta.kind === 'video' && clipThumb(clip)" class="clip-thumb" :src="clipThumb(clip)" alt="" draggable="false" />
+              <img v-if="meta.kind === 'video' && clipThumb(clip)" class="clip-thumb" :src="clipThumb(clip)" crossorigin="anonymous" alt="" draggable="false" />
               <canvas
                 v-if="meta.kind === 'audio'"
                 class="wave"

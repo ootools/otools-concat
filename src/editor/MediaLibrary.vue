@@ -25,7 +25,7 @@ const busy = computed(() => importState.value === 'importing');
     </div>
     <div class="media-grid">
       <div v-for="asset in items" :key="asset.id" class="media-card" draggable="true">
-        <img v-if="asset.info.kind !== 'audio' && asset.thumb" class="media-thumb" :src="asset.thumb" alt="" />
+        <img v-if="asset.info.kind !== 'audio' && asset.thumb" class="media-thumb" :src="asset.thumb" crossorigin="anonymous" alt="" />
         <div v-else class="media-thumb placeholder">{{ kindIcon(asset.info.kind) }}</div>
         <div class="media-actions">
           <button :title="t('addToTimeline')" @click="addToTimeline(asset.id)">＋</button>

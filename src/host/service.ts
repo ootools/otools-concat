@@ -156,6 +156,18 @@ export async function connectConcatd(api: SidecarApi, timeoutMs = 15_000): Promi
   }
 }
 
+/** Publish a client only after the HTTP health check; failed sessions must release their sidecar. */
+export async function createReadyClient(connection: SidecarConnection, fetcher?: typeof fetch): Promise<ConcatdClient> {
+  const client = new ConcatdClient(connection, fetcher);
+  try {
+    await client.status();
+    return client;
+  } catch (error) {
+    await connection.dispose();
+    throw error;
+  }
+}
+
 export interface RenderProgressEvent {
   state: 'running' | 'done' | 'failed' | 'cancelled';
   seconds: number;
@@ -192,7 +204,7 @@ export interface RenderRequestBody {
 export class ConcatdClient {
   constructor(
     private readonly connection: SidecarConnection,
-    private readonly fetcher: typeof fetch = globalThis.fetch,
+    private readonly fetcher: typeof fetch = globalThis.fetch.bind(globalThis),
   ) {}
 
   get origin(): string {
